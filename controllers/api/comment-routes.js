@@ -1,25 +1,17 @@
-const commentFormHandler = async function(event) {
-    event.preventDefault();
-  
-    const postId = document.querySelector('input[name="post-id"]').value;
-    const body = document.querySelector('textarea[name="comment-body"]').value;
-  
-    if (body) {
-      await fetch('/api/comment', {
-        method: 'POST',
-        body: JSON.stringify({
-          postId,
-          body
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-  
-      document.location.reload();
-    }
-  };
-  
-  document
-    .querySelector('#new-comment-form')
-    .addEventListener('submit', commentFormHandler);
+const router = require('express').Router();
+const { Comment } = require('../../models/');
+const withAuth = require('../../utils/auth');
+
+router.post('/', withAuth, async (req, res) => {
+  try {
+    const newComment = await Comment.create({
+      ...req.body,
+      userId: req.session.userId,
+    });
+    res.json(newComment);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+module.exports = router;
